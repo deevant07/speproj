@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ftp="http://www.mulesoft.org/schema/mule/ftp" xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp"
+	xmlns:tcp="http://www.mulesoft.org/schema/mule/tcp" xmlns:stdio="http://www.mulesoft.org/schema/mule/stdio"	
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="CE-3.3.1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/tcp http://www.mulesoft.org/schema/mule/tcp/3.3/mule-tcp.xsd 
+http://www.mulesoft.org/schema/mule/ftp http://www.mulesoft.org/schema/mule/ftp/3.3/mule-ftp.xsd 
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/3.3/mule-file.xsd 
+http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/3.3/mule-smtp.xsd 
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd 
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/3.3/mule.xsd 
+http://www.mulesoft.org/schema/mule/stdio http://www.mulesoft.org/schema/mule/stdio/3.3/mule-stdio.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/3.3/mule-http.xsd ">
+   
+   
+    <tcp:connector name="tcpConnector" doc:name="TCP connector" clientSoTimeout="10000" receiveBacklog="0" receiveBufferSize="8192" sendBufferSize="8192" serverSoTimeout="100000" socketSoLinger="1000" validateConnections="true" keepAlive="true" reuseAddress="true"> 
+		<tcp:streaming-protocol />
+    </tcp:connector>
+    
+    <file:connector name="fileConnector" autoDelete="false" streaming="true" validateConnections="true" doc:name="File">   
+    </file:connector>
+    
+    <smtp:connector name="devOpsEmailConnector" contentType="text/html" validateConnections="true" fromAddress="${spe.internal.email.from.address}" doc:name="SMTP"></smtp:connector>
+    <smtp:endpoint name="devOpsSmtpServer" host="${spe.internal.email.smtp.host}" user="${spe.internal.email.smtp.loginId}" password="${spe.internal.email.smtp.password}" from="${spe.internal.email.from.address}" subject="${spe.internal.email.subject}" to="${spe.internal.email.to.address}" port="${spe.internal.email.smtp.port}" doc:name="SMTP" responseTimeout="${spe.internal.email.smtp.responseTimeout.milliseconds}" connector-ref="devOpsEmailConnector"></smtp:endpoint>
+    <spring:beans> 
+        <spring:bean id="spePropertyConfigurer" name="spePropertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"> 
+            <spring:property name="ignoreUnresolvablePlaceholders" value="true"></spring:property>  
+            <spring:property name="locations"> 
+                <spring:list> 
+                    <spring:value>spe_${ostype}.properties</spring:value>  
+                    <spring:value>spe-common.properties</spring:value>  
+                    <spring:value>spe-flows_${env}.properties</spring:value>  
+                </spring:list>  
+            </spring:property>  
+        </spring:bean>  
+        <spring:bean lazy-init="false" id="speConfig" name="speConfig" class="com.singpost.spe.esb.config.SPEConfig"> 
+            <spring:property name="propertiesMap"> 
+                <spring:props> 
+                    <spring:prop key="wmsPoCsvFolder">${spe.newpo.temp.folder.fullpath}</spring:prop>  
+                    <spring:prop key="snCxmlFolder">${spe.sn.cxml.local.temp.folder.fullpath}</spring:prop>  
+                    <spring:prop key="ftlTempFolderPath">${spe.newpo.temp.folder.fullpath}</spring:prop>  
+                    <spring:prop key="archiveFolderPath">${spe.newpo.archive.folder.fullpath}</spring:prop>  
+                    <spring:prop key="inProcessFolderPath">${spe.newpo.inprocess.folder.fullpath}</spring:prop>  
+                    <spring:prop key="ftlRootFolder">${spe.templates.root.folder.fullpath}</spring:prop>  
+                    <spring:prop key="delayTimeBeforeSnCall">${spe.delaytime.before.sn.call.in.seconds}</spring:prop>  
+                    <spring:prop key="prInProcessPath">${spe.notifications.pr.inprocess.folder.fullpath}</spring:prop>  
+                    <spring:prop key="notfArchiveFolderPath">${spe.notifications.archive.folder.fullpath}</spring:prop>  
+                    <spring:prop key="notfInprocessFolder">${spe.notifications.inprocess.folder.fullpath}</spring:prop>  
+                    <spring:prop key="snInboundFolder">${spe.sn.local.csvfiles.inbound.foler.fullpath}</spring:prop>  
+                </spring:props>  
+            </spring:property>  
+            <!--			<spring:property name="wmsPoCsvFolder" value="${spe.newpo.temp.folder.fullpath}" />-->  
+            <!--            <spring:property name="ftlRootFolder" value="${spe.templates.root.folder.fullpath}"/>-->  
+            <!--            <spring:property name="snCxmlFolder" value="${spe.sn.cxml.local.temp.folder.fullpath}"/>-->  
+        </spring:bean>
+        <spring:bean id="propertyInitilizer" class="com.singpost.spe.esb.listeners.PropertyInitilizer">
+			 <spring:property name="templateDirectory" value="${spe.templates.root.folder.fullpath}"/>
+		</spring:bean>
+		 
+    </spring:beans>
+    
+    <flow name="NewPOReceiver" doc:name="NewPOReceiver"> 
+    	
+        <!-- <http:inbound-endpoint exchange-pattern="one-way"
+    			host="${spe.newpo.listener.http.host}" port="${spe.newpo.listener.http.port}" contentType="text/xml"
+    			doc:name="HTTP" />-->  
+        <tcp:inbound-endpoint host="${spe.newpo.listener.tcp.host}" port="${spe.newpo.listener.tcp.port}" responseTimeout="100000" doc:name="TCP"></tcp:inbound-endpoint>  
+        <custom-transformer class="com.singpost.spe.esb.transformers.po.SPETcpRequestXmlDecoder" doc:name="Xml to String"> </custom-transformer>  
+        <file:outbound-endpoint path="${spe.newpo.inbound.folder.fullpath}" responseTimeout="30000" connector-ref="fileConnector" outputPattern="SGADISO#[jxpath:cXML/Request/OrderRequest/OrderRequestHeader/@orderID]#[function:datestamp:yyyyMMddHHmm].xml" doc:name="String to File Converter"> </file:outbound-endpoint>  
+        <custom-exception-strategy class="com.singpost.spe.esb.exception.ExceptionListener">
+            <processor-chain> 
+                <custom-transformer class="com.singpost.spe.esb.exception.Exception2MailMessageTransformer" doc:name="Java"></custom-transformer>  
+                <smtp:outbound-endpoint ref="devOpsSmtpServer"></smtp:outbound-endpoint> 
+            </processor-chain>
+  
+        </custom-exception-strategy>  
+    </flow>
+    <flow name="FileProcessorFrmHttpMsg" doc:name="FileProcessorFrmHttpMsg" processingStrategy="synchronous"> 
+    
+        <file:inbound-endpoint path="${spe.newpo.inbound.folder.fullpath}" connector-ref="fileConnector" doc:name="File Reciever" pollingFrequency="5000" moveToDirectory="${spe.newpo.inprocess.folder.fullpath}" responseTimeout="10000"> 
+            <file:filename-wildcard-filter pattern="*.xml"></file:filename-wildcard-filter>  
+        </file:inbound-endpoint>  
+        <custom-transformer class="com.singpost.spe.esb.transformers.po.PO2POCsvTransformer" doc:name="Convert to Csv"> 
+            <spring:property name="originalFileName" value="#[header:INVOCATION.originalFileName].csv"></spring:property>  
+            <spring:property name="tempFolderPath" value="${spe.newpo.temp.folder.fullpath}"></spring:property>  
+            <spring:property name="speConfig" ref="speConfig"></spring:property>  
+        </custom-transformer>  
+        <ftp:outbound-endpoint name="ftpOutbound" host="${spe.newpo.wms.server.hostname}" port="${spe.newpo.wms.server.port}" user="${spe.newpo.wms.server.loginId}" password="${spe.newpo.wms.server.password}"  responseTimeout="10000" doc:name="FTP" path="${spe.newpo.wms.server.path}"> 
+            <message-properties-transformer scope="outbound"> 
+                <add-message-property key="outputPattern" value="#[header:wmsNewPoFileName]"></add-message-property>  
+            </message-properties-transformer>  
+        </ftp:outbound-endpoint>  
+        <custom-transformer	class="com.singpost.spe.esb.transformers.po.NewPoFlowExitTransformer" doc:name="Exit flow">			
+			<spring:property name="speConfig" ref="speConfig" />
+		</custom-transformer>	
+        <!-- For Local testing....
+    	
+            <sftp:outbound-endpoint exchange-pattern="one-way" host="${spe.newpo.wms.server.hostname}" port="${spe.newpo.wms.server.port}" path="${spe.newpo.wms.server.path}" user="${spe.newpo.wms.server.loginId}" password="${spe.newpo.wms.server.password}" responseTimeout="10000" doc:name="SFTP" encoding="UTF-8"  />
+    		<file:outbound-endpoint path="${spe.newpo.completed.folder.fullpath}" outputPattern="#[header:currentFileName].csv" responseTimeout="10000" connector-ref="fileConnector" doc:name="String to File Converter"/>
+    	
+    	-->  
+        <custom-exception-strategy class="com.singpost.spe.esb.exception.ExceptionListener">
+            <processor-chain> 
+                <custom-transformer class="com.singpost.spe.esb.transformers.email.Exception2MailMessageTransformer" doc:name="Java"></custom-transformer>  
+                <smtp:outbound-endpoint ref="devOpsSmtpServer"></smtp:outbound-endpoint> 
+            </processor-chain>
+  
+        </custom-exception-strategy>  
+    </flow>
+
+    
+   
+</mule>

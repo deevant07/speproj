@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp"
+	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:jdbc-ee="http://www.mulesoft.org/schema/mule/ee/jdbc" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" 
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.3.2" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd 
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd 
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd 
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd 
+http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd 
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd 
+http://www.mulesoft.org/schema/mule/ee/jdbc http://www.mulesoft.org/schema/mule/ee/jdbc/current/mule-jdbc-ee.xsd ">
+
+
+<!--
+
+
+    <sftp:connector name="SC-SFTP-SETTINGS" validateConnections="true" pollingFrequency="20000"  doc:name="SFTP" archiveDir="${spe.sn.local.csvfiles.archive.folder.fullpath}" archiveTempReceivingDir="${spe.sn.local.csvfiles.archive.temp.receiving.folder.name}" archiveTempSendingDir="${spe.sn.local.csvfiles.archive.temp.sending.folder.name}" tempDirInbound="${spe.sn.sftp.csvfiles.temp.inbound.folder.name}" tempDirOutbound="${spe.sn.sftp.csvfiles.temp.outbound.folder.name}"  keepFileOnError="true" sizeCheckWaitTime="1000" duplicateHandling="addSeqNo" useTempFileTimestampSuffix="true">
+        <reconnect frequency="10000" count="5"/>
+    </sftp:connector>
+
+    <flow name="shipNoticeReceiver" doc:name="shipNoticeReceiver">
+        <sftp:inbound-endpoint host="${spe.sn.sftp.hostname}" port="${spe.sn.sftp.port}"  responseTimeout="60000" encoding="UTF-8" pollingFrequency="5000" fileAge="10000" doc:name="SFTP Poll for ShipNotices" connector-ref="SC-SFTP-SETTINGS" password="${spe.sn.sftp.password}" user="${spe.sn.sftp.loginId}" path="${spe.sn.sftp.csvfiles.folder.fullpath}"/>
+        <custom-transformer class="com.singpost.spe.esb.transformers.sn.SPESnFormatter" doc:name="Ship Notice Formatter">
+        	<spring:property name="speConfig" ref="speConfig" />
+	    </custom-transformer>
+	    
+	    <custom-exception-strategy
+		class="com.singpost.spe.esb.exception.ExceptionListener">
+            <processor-chain> 
+                <custom-transformer class="com.singpost.spe.esb.exception.Exception2MailMessageTransformer" doc:name="Java"></custom-transformer>  
+                <smtp:outbound-endpoint ref="devOpsSmtpServer"></smtp:outbound-endpoint> 
+            </processor-chain>
+		</custom-exception-strategy>
+	    
+    </flow>
+    <flow name="shipNoticeProcessor" doc:name="shipNoticeProcessor">
+        <file:inbound-endpoint responseTimeout="10000" doc:name="ShipNoticePicker" fileAge="1000" path="${spe.sn.local.csvfiles.inbound.foler.fullpath}" pollingFrequency="5000" connector-ref="fileCnctrNoStream" moveToDirectory="${spe.sn.local.csvfiles.inprocess.foler.fullpath}"/>
+        <custom-transformer class="com.singpost.spe.esb.transformers.sn.SPESnCsvToJavaTransformer" doc:name="Sn - Csv to Java">
+        	<spring:property name="speConfig" ref="speConfig" />
+        </custom-transformer>
+        <custom-transformer encoding="UTF-8"  class="com.singpost.spe.esb.transformers.sn.SPESnCsvToPoAckTransformer" doc:name="Csv to PO Ack"/>        	
+        <http:outbound-endpoint exchange-pattern="request-response" host="${spe.sn.supplizer.hostname}" port="${spe.sn.supplizer.port}" doc:name="Send PO Ack" path="${spe.sn.supplizer.po.ack.path}" responseTimeout="30000"/>
+        <custom-transformer class="com.singpost.spe.esb.transformers.sn.SPESnCxmlTransformer" doc:name="Sn Cxml">
+        	<spring:property name="speConfig" ref="speConfig"/>
+        </custom-transformer>
+        <http:outbound-endpoint exchange-pattern="request-response" host="${spe.sn.supplizer.hostname}" port="${spe.sn.supplizer.port}" doc:name="poShipConfirm" path="${spe.sn.supplizer.sn.new.path}" responseTimeout="30000"/>
+        
+        <custom-exception-strategy
+		class="com.singpost.spe.esb.exception.ExceptionListener">
+            <processor-chain> 
+                <custom-transformer class="com.singpost.spe.esb.exception.Exception2MailMessageTransformer" doc:name="Java"></custom-transformer>  
+                <smtp:outbound-endpoint ref="devOpsSmtpServer"></smtp:outbound-endpoint> 
+            </processor-chain>
+		</custom-exception-strategy>
+    </flow>
+   
+    
+   -->
+   
+   
+   <!--   This is to test locally -->
+   
+    <flow name="csvtoxmlFlow2" doc:name="csvtoxmlFlow2">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8082" doc:name="HTTP"/>        
+      	<object-to-string-transformer />
+        <logger message="#[message:payload]" level="INFO" doc:name="Logger"/>
+        <http:response-builder status="200" contentType="text/plain" doc:name="HTTP Response Builder"/>
+        
+    </flow>
+     
+    
+</mule>

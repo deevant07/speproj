@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.3.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd 
+http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd 
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd 
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd ">
+	
+	<file:connector name="fileCnctrNoStream" autoDelete="false" streaming="false" validateConnections="true" doc:name="File" fileAge="1000" pollingFrequency="2000"/>
+	
+	<flow name="NotificationsListener" doc:name="NotificationsListener"
+		doc:description="This flow accepts the incoming HTTP request xml at port 8586 and save the xml file in path root.fullpath- messages - inbound">
+		<http:inbound-endpoint exchange-pattern="request-response"
+			host="localhost" port="8586" doc:name="HTTP" encoding="UTF-8" contentType="text/xml" >
+			<http:body-to-parameter-map-transformer />
+		</http:inbound-endpoint>
+		<custom-transformer class="com.singpost.spe.esb.transport.http.transformers.HttpRequestXmlDecoder" doc:name="Xml to String"/>
+	
+		<file:outbound-endpoint path="${spe.notifications.inbound.folder.fullpath}"
+			outputPattern="notificationMsg_#[function:datestamp:yyyyMMddHHmm].xml"
+			responseTimeout="10000" doc:name="Notification Messages to File" connector-ref="fileCnctrNoStream"/>
+        <custom-transformer class="com.singpost.spe.esb.transformers.notf.SPENotificationResponse" doc:name="Notification Response"/>
+        <http:response-builder status="200" contentType="text/xml" doc:name="HTTP Response Builder"/>
+	</flow>
+    <flow name="NotificationsProcessor" doc:name="NotificationsProcessor">
+        <file:inbound-endpoint path="${spe.notifications.inbound.folder.fullpath}" pollingFrequency="20000" fileAge="1000" responseTimeout="10000" doc:name="Notificaiton Message Poll" mimeType="text/xml" connector-ref="fileCnctrNoStream" moveToDirectory="${spe.notifications.inprocess.folder.fullpath}"/>               
+        <custom-transformer class="com.singpost.spe.esb.transformers.notf.PwdResetMailTransformer" doc:name="Parse and process">
+        	<spring:property name="speConfig" ref="speConfig" />
+        </custom-transformer>
+        <choice doc:name="Choice">
+	        <when expression="OUTBOUND:pwdReset=true" evaluator="header">
+	        	<smtp:outbound-endpoint  subject="Password Reset"
+					to="#[header:OUTBOUND:toEmailID]"  doc:name="SMTP" responseTimeout="10000" ref="devOpsSmtpServer"/>	
+	        </when>
+	        <otherwise>
+	        	<logger message="Not handling message " level="INFO" doc:name="Logger"/>
+	        </otherwise>
+        </choice>
+    </flow>
+
+</mule>
