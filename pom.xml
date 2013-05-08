@@ -49,13 +49,42 @@
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.2.1</version>
-				<configuration>
+				<configuration>	
 					<finalName>speconfig-${version}</finalName>
 					<appendAssemblyId>false</appendAssemblyId>
 					<descriptors>
-						<descriptor>assembly.xml</descriptor>
+							<descriptor>assembly-props.xml</descriptor>						
 					</descriptors>
 				</configuration>
+				<executions>
+			<!--		<execution>
+                        <id>spe-config</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>speconfig-${version}</finalName>                            
+							<descriptors>
+								<descriptor>assembly-props.xml</descriptor>						
+							</descriptors>
+                        </configuration>
+                    </execution>
+			-->		
+					<execution>
+                        <id>spe-ftls</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>speftls-${version}</finalName>                            
+							<descriptors>
+								<descriptor>assembly-ftls.xml</descriptor>						
+							</descriptors>
+                        </configuration>
+                    </execution>					
+				</executions>
 			</plugin>	
 		</plugins>
 		<resources>
