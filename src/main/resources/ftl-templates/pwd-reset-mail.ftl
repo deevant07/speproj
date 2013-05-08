@@ -1,0 +1,3 @@
+<#assign password = doc["message/user/password"]>
+You have requested for a password reset and please find below your new password ....
+<BR/><B>${password}
