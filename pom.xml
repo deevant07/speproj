@@ -33,7 +33,7 @@
 				<version>1.7</version>
 				<extensions>true</extensions>
 				<configuration>
-					<finalName>${project.artifactId}_${project.version}_${BUILD_TAG}</finalName>
+					<finalName>${project.artifactId}_${project.version}_${BUILD_NUMBER}</finalName>
 					<copyToAppsDirectory>true</copyToAppsDirectory>
 				</configuration>
 			</plugin>
@@ -51,7 +51,7 @@
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.2.1</version>
 				<configuration>	
-					<finalName>speconfig-${version}</finalName>
+					<finalName>speconfig-${version}_${BUILD_NUMBER}</finalName>
 					<appendAssemblyId>false</appendAssemblyId>
 					<descriptors>
 							<descriptor>assembly-props.xml</descriptor>						
@@ -65,7 +65,7 @@
                             <goal>single</goal>
                         </goals>
                         <configuration>
-                            <finalName>speftls-${version}</finalName>                            
+                            <finalName>speftls-${version}_${BUILD_NUMBER}</finalName>                            
 							<descriptors>
 								<descriptor>assembly-ftls.xml</descriptor>						
 							</descriptors>
