@@ -33,7 +33,7 @@
 				<version>1.7</version>
 				<extensions>true</extensions>
 				<configuration>
-					<finalName>${project.artifactId}_${project.version}_${BUILD_NUMBER}</finalName>
+					<finalName>${project.artifactId}_${project.version}_${BUILD_TAG}</finalName>
 					<copyToAppsDirectory>true</copyToAppsDirectory>
 				</configuration>
 			</plugin>
