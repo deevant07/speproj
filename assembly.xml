@@ -10,30 +10,20 @@
 	<includeBaseDirectory>false</includeBaseDirectory>
 	<fileSets>
 		<fileSet>
-			<outputDirectory>/speconfig</outputDirectory>
+			<outputDirectory>/speroot/config</outputDirectory>
 			<directory>src/main/resources/config</directory>
-			<includes>
-				<include>log4j.properties</include>		
+			<includes>						
 				<include>spe_${ostype}.properties</include>
 				<include>spe-common.properties</include>
 				<include>spe-flows_${env}.properties</include>							
 			</includes>
 		</fileSet>
+		<fileSet>
+			<outputDirectory>/speroot/ftl-templates</outputDirectory>
+			<directory>src/main/resources/ftl-templates</directory>
+			<includes>
+				<include>*.*</include>												
+			</includes>
+		</fileSet>
 	</fileSets>
-<!--	<dependencySets>
-		<dependencySet>
-			<outputDirectory>/lib</outputDirectory>
-			<useProjectArtifact>true</useProjectArtifact>
-			<unpack>false</unpack>
-			<scope>runtime</scope>
-			<useTransitiveFiltering>true</useTransitiveFiltering>
-			<excludes>
-				<exclude>org.mule:mule-core</exclude>
-				<exclude>org.mule.transports:mule-transport-*</exclude>
-				<exclude>org.mule.modules:mule-module-*</exclude>
-				<exclude>org.springframework:spring-*</exclude>
-			</excludes>			
-		</dependencySet>
-	</dependencySets>
--->	
 </assembly>

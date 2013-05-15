@@ -54,24 +54,9 @@
 					<finalName>speconfig-${version}_${BUILD_NUMBER}</finalName>
 					<appendAssemblyId>false</appendAssemblyId>
 					<descriptors>
-							<descriptor>assembly-props.xml</descriptor>						
+							<descriptor>assembly.xml</descriptor>						
 					</descriptors>
-				</configuration>
-				<executions>
-					<execution>
-                        <id>spe-ftls</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <finalName>speftls-${version}_${BUILD_NUMBER}</finalName>                            
-							<descriptors>
-								<descriptor>assembly-ftls.xml</descriptor>						
-							</descriptors>
-                        </configuration>
-                    </execution>					
-				</executions>
+				</configuration>				
 			</plugin>	
 		</plugins>
 		<resources>
