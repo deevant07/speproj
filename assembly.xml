@@ -25,5 +25,12 @@
 				<include>*.*</include>												
 			</includes>
 		</fileSet>
+		<fileSet>
+			<outputDirectory>/speroot</outputDirectory>
+			<directory>/</directory>
+			<includes>
+				<include>hudsonBuild.properties</include>												
+			</includes>
+		</fileSet>
 	</fileSets>
 </assembly>

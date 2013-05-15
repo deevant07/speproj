@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>spepack</groupId>
 	<artifactId>speproj</artifactId>
-	<packaging>mule</packaging>
+	<packaging>jar</packaging>
 	<version>1.0.0-SNAPSHOT</version>
 
 	<properties>
@@ -33,8 +33,17 @@
 				<version>1.7</version>
 				<extensions>true</extensions>
 				<configuration>
-					<finalName>${project.artifactId}_${project.version}_${BUILD_NUMBER}</finalName>
+					<finalName>${project.artifactId}_${project.version}</finalName>
 					<copyToAppsDirectory>true</copyToAppsDirectory>
+				<!--	<filterAppDirectory>
+						<resources>
+						  <resource>
+							<directory>/</directory>
+							<include>hudsonBuild.properties</include>
+						  </resource>      
+						</resources>
+					</filterAppDirectory>
+				-->	
 				</configuration>
 			</plugin>
 			<plugin>
@@ -51,14 +60,29 @@
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.2.1</version>
 				<configuration>	
-					<finalName>speconfig-${version}_${BUILD_NUMBER}</finalName>
+					<finalName>speconfig-${project.version}</finalName>
 					<appendAssemblyId>false</appendAssemblyId>
 					<descriptors>
 							<descriptor>assembly.xml</descriptor>						
 					</descriptors>
-				</configuration>				
-			</plugin>	
-		</plugins>
+				</configuration>
+				<executions>
+					<execution>
+                        <id>speproj</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>${project.artifactId}-${project.version}</finalName>                            
+							<descriptors>
+								<descriptor>assembly-proj.xml</descriptor>						
+							</descriptors>
+                        </configuration>
+                    </execution>					
+				</executions>	
+			</plugin>					
+		</plugins>		
 		<resources>
 		  <resource>
 			<directory>src/main/resources/*</directory>
@@ -67,7 +91,6 @@
 			</excludes>
 		  </resource>      
 		</resources>
-	
 	</build>	
 
 	<!-- Mule Dependencies -->
