@@ -20,7 +20,6 @@
 		</fileSet>
 		<fileSet>
 			<outputDirectory>/</outputDirectory>
-			<directory>/</directory>
 			<includes>
 				<include>hudsonBuild.properties</include>												
 			</includes>

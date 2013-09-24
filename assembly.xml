@@ -26,8 +26,7 @@
 			</includes>
 		</fileSet>
 		<fileSet>
-			<outputDirectory>/speroot</outputDirectory>
-			<directory>/</directory>
+			<outputDirectory>/speroot</outputDirectory>			
 			<includes>
 				<include>hudsonBuild.properties</include>												
 			</includes>
